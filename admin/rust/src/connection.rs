@@ -61,22 +61,21 @@ pub async fn send_messages(mut writer: OwnedWriteHalf, user_id: String) {
             break;
         }
 
-        if !msg.contains(':') {
-            println!("⚠️ Xato format! Format ushbu ko'rinishda bo'lsin -> target_id:xabar");
-            print!("> ");
-            let _ = std::io::stdout().flush();
-            continue;
+        let mut target_id = "admin".trim();
+        let mut payload = "onlines".trim();
+        if msg.contains("onlines") {
+        	
+        } else {
+	        let mut parts = msg.splitn(2, ':');
+	        
+	        target_id = parts.next().unwrap_or("").trim();
+	        payload = parts.next().unwrap_or("").trim();
         }
-
-        let mut parts = msg.splitn(2, ':');
-        let target_id = parts.next().unwrap_or("").trim();
-        let payload = parts.next().unwrap_or("").trim();
-
-        let packet = protocol::OutgoingPacket {
-            sender_id: &user_id,
-            target_id,
-            payload,
-        };
+	    let packet = protocol::OutgoingPacket {
+	        sender_id: &user_id,
+	        target_id,
+	        payload,
+	    };
 
         if let Ok(mut json_str) = serde_json::to_string(&packet) {
             json_str.push('\n');

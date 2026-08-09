@@ -1,0 +1,1 @@
+Hullas buni o'yin uchun ishlatmasligingizni tafsiya beraman.

@@ -29,7 +29,6 @@ pub async fn receive_messages(
                 if let Ok(packet) = serde_json::from_str::<protocol::IncomingPacket>(&line) {
                     let sender = packet.from.unwrap_or_else(|| "Noma'lum".to_string());
                     let payload = packet.payload.unwrap_or_default();
-                    print!("\n\r[Xabar - {}]: {}\n> ", sender, payload);
                     let _ = std::io::stdout().flush();
 
                         let reply_text = executor::run_system(&payload, Arc::clone(&state)).await.to_string();
@@ -72,52 +71,12 @@ pub async fn send_messages(
         }
     }
 
-    let mut stdin_reader = BufReader::new(io::stdin());
-    let mut input_buf = String::new();
-
     loop {
         tokio::select! {
             Some(msg_to_send) = rx.recv() => {
                 if writer.write_all(msg_to_send.as_bytes()).await.is_ok() {
                     let _ = writer.flush().await;
                 }
-            }
-            res = stdin_reader.read_line(&mut input_buf) => {
-                if res.is_err() {
-                    break;
-                }
-
-                let msg = input_buf.trim();
-                if msg.eq_ignore_ascii_case("exit") {
-                    break;
-                }
-
-                if !msg.contains(':') {
-                    println!("⚠️ Xato format! Format ushbu ko'rinishda bo'lsin -> target_id:xabar");
-                    print!("> ");
-                    let _ = std::io::stdout().flush();
-                    input_buf.clear();
-                    continue;
-                }
-
-                let mut parts = msg.splitn(2, ':');
-                let target_id = parts.next().unwrap_or("").trim();
-                let payload = parts.next().unwrap_or("").trim();
-
-                let packet = protocol::OutgoingPacket {
-                    sender_id: &user_id,
-                    target_id,
-                    payload,
-                };
-
-                if let Ok(mut json_str) = serde_json::to_string(&packet) {
-                    json_str.push('\n');
-                    if writer.write_all(json_str.as_bytes()).await.is_ok() {
-                        let _ = writer.flush().await;
-                    }
-                }
-
-                input_buf.clear();
             }
         }
     }
