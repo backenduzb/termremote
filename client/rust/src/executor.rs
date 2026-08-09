@@ -34,7 +34,7 @@ pub async fn run_system(cmd: &str, state: Arc<Mutex<TerminalState>>) -> String {
 
         if new_path.exists() && new_path.is_dir() {
             state_guard.current_dir = new_path.canonicalize().unwrap_or(new_path);
-            return format!("Directory changed to: {}", state_guard.current_dir.display());
+            return format!("{}", state_guard.current_dir.display());
         } else {
             return format!("cd: no such file or directory: {}", trimmed_cmd[3..].trim());
         }
@@ -45,7 +45,7 @@ pub async fn run_system(cmd: &str, state: Arc<Mutex<TerminalState>>) -> String {
             .arg("-c")
             .arg(trimmed_cmd)
             .current_dir(&state_guard.current_dir)
-            .spawn(); 
+            .spawn();
 
         match child {
             Ok(_) => format!("Started process in background: {}", trimmed_cmd),
@@ -55,7 +55,7 @@ pub async fn run_system(cmd: &str, state: Arc<Mutex<TerminalState>>) -> String {
         let output = Command::new("sh")
             .arg("-c")
             .arg(trimmed_cmd)
-            .current_dir(&state_guard.current_dir) 
+            .current_dir(&state_guard.current_dir)
             .output()
             .await;
 

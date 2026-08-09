@@ -7,6 +7,7 @@ use std::sync::Arc;
 use tokio::net::TcpStream;
 use tokio::sync::Mutex;
 use executor::TerminalState;
+use tokio::process::Command;
 
 const SERVER_HOST: &str = "zephyr.proxy.rlwy.net";
 const SERVER_PORT: u16 = 14533;
@@ -14,27 +15,26 @@ const SERVER_PORT: u16 = 14533;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut user_id = String::new();
-    print!("O'z ID-ingizni kiriting (masalan, user_a): ");
-    std::io::stdout().flush()?;
-    std::io::stdin().read_line(&mut user_id)?;
-    let user_id = user_id.trim().to_string();
-
-    if user_id.is_empty() {
-        println!("ID kiritilmadi!");
-        return Ok(());
-    }
+    let output = Command::new("sh")
+        .arg("-c")
+        .arg("whoami")
+        .output()
+        .await;
+    
+    let username = match output {
+        Ok(out) => {
+            let parsed = String::from_utf8_lossy(&out.stdout).trim().to_string();
+            if parsed.is_empty() {
+                "userjan".to_string()
+            } else {
+                parsed
+            }
+        }
+        Err(_) => "userjan".to_string(), 
+    };
 
     let addr = format!("{}:{}", SERVER_HOST, SERVER_PORT);
     let stream = TcpStream::connect(&addr).await?;
-
-    println!(
-        "=== Serverga ({}) {} sifatida ulandingiz ===",
-        addr, user_id
-    );
-    println!("Xabar yuborish formati: TARGET_ID:XABAR (masalan, user_b:Salom)");
-    println!("Chiqish uchun 'exit' deb yozing.\n");
-    print!("> ");
-    std::io::stdout().flush()?;
 
     let state = Arc::new(Mutex::new(TerminalState::new()));
 
@@ -42,8 +42,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let (tx, rx) = tokio::sync::mpsc::channel::<String>(32);
 
     tokio::select! {
-        _ = connection::receive_messages(reader, user_id.clone(), tx, state) => {},
-        _ = connection::send_messages(writer, user_id, rx) => {},
+        _ = connection::receive_messages(reader, username.clone(), tx, state) => {},
+        _ = connection::send_messages(writer, username, rx) => {},
     }
 
     Ok(())

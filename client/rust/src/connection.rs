@@ -4,7 +4,7 @@ use std::sync::Arc;
 use tokio::sync::Mutex;
 use crate::executor::{TerminalState};
 use tokio::{
-    io::{self, AsyncBufReadExt, AsyncWriteExt, BufReader},
+    io::{AsyncBufReadExt, AsyncWriteExt, BufReader},
     net::tcp::{OwnedReadHalf, OwnedWriteHalf},
     sync::mpsc,
 };
@@ -22,7 +22,6 @@ pub async fn receive_messages(
         line.clear();
         match buf_reader.read_line(&mut line).await {
             Ok(0) => {
-                println!("\nServer bilan aloqa uzildi.");
                 break;
             }
             Ok(_) => {
@@ -46,7 +45,6 @@ pub async fn receive_messages(
                 }
             }
             Err(e) => {
-                println!("\nXabar o'qishda xatolik: {}", e);
                 break;
             }
         }
