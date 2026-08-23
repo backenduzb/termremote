@@ -14,19 +14,16 @@ pub async fn receive_messages(reader: OwnedReadHalf) {
         line.clear();
         match buf_reader.read_line(&mut line).await {
             Ok(0) => {
-                println!("\nServer bilan aloqa uzildi.");
                 break;
             }
             Ok(_) => {
                 if let Ok(packet) = serde_json::from_str::<protocol::IncomingPacket>(&line) {
-                    let sender = packet.from.unwrap_or_else(|| "Noma'lum".to_string());
                     let payload = packet.payload.unwrap_or_default();
-                    print!("\n\r[Xabar - {}]: {}\n> ", sender, payload);
+                    print!("{}", payload);
                     let _ = std::io::stdout().flush();
                 }
             }
             Err(e) => {
-                println!("\nXabar o'qishda xatolik: {}", e);
                 break;
             }
         }

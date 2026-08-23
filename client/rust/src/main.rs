@@ -1,16 +1,14 @@
 pub mod connection;
 pub mod executor;
 pub mod protocol;
-
-use std::io::Write;
 use std::sync::Arc;
 use tokio::net::TcpStream;
 use tokio::sync::Mutex;
 use executor::TerminalState;
 use tokio::process::Command;
 
-const SERVER_HOST: &str = "zephyr.proxy.rlwy.net";
-const SERVER_PORT: u16 = 14533;
+const SERVER_HOST: &str = "switchback.proxy.rlwy.net";
+const SERVER_PORT: u16 = 26527;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
